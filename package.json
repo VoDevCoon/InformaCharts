@@ -31,8 +31,8 @@
     "chalk": "^2.4.1",
     "express": "^4.16.3",
     "lodash": "^4.17.10",
-    "oauth-1.0a": "^2.2.4",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "woocommerce-api": "^1.4.2"
   }
 }

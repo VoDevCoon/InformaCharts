@@ -11,7 +11,7 @@ const config = {
   expireTime: 24 * 60 * 10,
 };
 
-process.env.NODE_ENV = process.env.NODE_ENV || config.dev;
+process.env.NODE_ENV = process.env.NODE_ENV || config.prod;
 config.env = process.env.NODE_ENV;
 
 let envConfig;

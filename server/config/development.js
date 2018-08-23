@@ -3,7 +3,7 @@ module.exports = {
   woo: {
     key: process.env.wooStagingKey || '',
     secret: process.env.wooStagingSecret || '',
-    baseUrl: 'http://staging.informa.com.au/wp-json/wc/v2',
+    baseUrl: 'http://staging.informa.com.au',
   },
   db: {
     url: 'mongodb://localhost/informacharts_dev',
