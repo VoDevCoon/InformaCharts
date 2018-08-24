@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm-run-all --parallel security-check open:src lint:watch",
     "open:src": "babel-node server/server.js",
-    "lint": "esw webpack.config.* src server --color",
+    "lint": "esw webpack.config.* src server --color --fix",
     "lint:watch": "npm run lint -- --watch",
     "security-check": "nsp check"
   },
@@ -31,6 +31,7 @@
     "chalk": "^2.4.1",
     "express": "^4.16.3",
     "lodash": "^4.17.10",
+    "mongoose": "^5.2.9",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "woocommerce-api": "^1.4.2"
