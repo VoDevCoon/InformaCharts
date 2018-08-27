@@ -15,7 +15,7 @@ const EventSchema = new mongoose.Schema({
   status: String,
   startDate: Date,
   duration: Number,
-  createDate: Date,
+  createdDate: Date,
 });
 
 module.exports = mongoose.model('event', EventSchema);

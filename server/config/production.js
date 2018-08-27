@@ -6,6 +6,6 @@ module.exports = {
     baseUrl: 'https://www.informa.com.au',
   },
   db: {
-    url: 'mongodb://localhost/informacharts_prod',
+    url: 'mongodb://localhost/informacharts',
   },
 };
