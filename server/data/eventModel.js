@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const EventSchema = new mongoose.Schema({
   eventId: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
   },
