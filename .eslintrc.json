@@ -3,6 +3,11 @@
   "rules": {
     "func-names": ["error", "never"],
     "no-unused-vars": "warn",
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "max-len": "warn",
+    "no-await-in-loop": "warn"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
   }
 }

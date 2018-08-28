@@ -8,17 +8,20 @@ import logger from './util/logger';
 
 mongoose.connect(config.db.url, { useNewUrlParser: true });
 
-setInterval(() => {
-  seed.newEvents();
-}, 10000);
+// setInterval(() => {
+//   seed.newEvents();
+// }, 3600000);
 
-Event.find({}).sort({ createdDate: -1 }).exec().then((result) => {
+// seed.newEvents();
+
+Event.find({}).sort({ createdDate: -1 }).exec().then(async (result) => {
   if (result && result.length > 0) {
-    result.forEach((event) => {
-      seed.newEventOrders(event);
-    });
+    for (let i = 0; i < result.length; i += 1) {
+      await seed.newEventOrders(result[i]);
+    }
   }
 });
+
 
 // Event.findOne({ eventId: '32593' }).exec().then((result) => {
 //   const event = result;
