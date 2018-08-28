@@ -49,6 +49,9 @@ const searchNewEvents = (wooCommerce, createdDate, pageIndex, pageSize) => {
           createdDate: Date.parse(c.date_created),
         };
 
+
+        logger.log(`remote: ${c.date_created}`);
+        logger.log(`parsed: ${event.createdDate}`);
         if (_.includes(event.categories, 'Conferences')) {
           evts.push(event);
         }
@@ -75,7 +78,6 @@ const searchNewOrders = (wooCommerce, event, createdDate, pageIndex, pageSize) =
   logger.log(`\n** PAGE ${pageIndex} <${event.name}>**`);
 
   wooCommerce.getAsync(query).then((result) => {
-
     if (result.statusCode === 200 && result.body.length > 0) {
       const orders = JSON.parse(result.body);
       orders.forEach((o) => {
@@ -108,7 +110,7 @@ const searchNewOrders = (wooCommerce, event, createdDate, pageIndex, pageSize) =
 const seed = {
   newEvents: () => {
     Event.findOne({}).sort({ createdDate: -1 }).exec().then((result) => {
-      let createdDate = '2018-01-10T00:00:00';
+      let createdDate = '2018-07-10T00:00:00';
       if (result) {
         createdDate = result.createdDate.toISOString();
       }

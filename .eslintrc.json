@@ -2,6 +2,7 @@
   "extends": "airbnb-base",
   "rules": {
     "func-names": ["error", "never"],
-    "no-unused-vars": "warn"
+    "no-unused-vars": "warn",
+    "no-underscore-dangle": "off"
   }
 }
