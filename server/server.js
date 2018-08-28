@@ -14,13 +14,18 @@ mongoose.connect(config.db.url, { useNewUrlParser: true });
 
 // seed.newEvents();
 
-Event.find({}).sort({ createdDate: -1 }).exec().then(async (result) => {
-  if (result && result.length > 0) {
-    for (let i = 0; i < result.length; i += 1) {
-      await seed.newEventOrders(result[i]);
+seed.newEvents().then(async (result) => {
+  // Event.find({}).sort({ createdDate: -1 }).exec().then(async (result) => {
+    if (result && result.length > 0) {
+      for (let i = 0; i < result.length; i += 1) {
+        if (result[i].status === 'enable') {
+          await seed.newEventOrders(result[i]);
+        }
+      }
     }
-  }
-});
+  // });
+}).catch((err) => logger.error(err));
+
 
 
 // Event.findOne({ eventId: '32593' }).exec().then((result) => {

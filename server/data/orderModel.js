@@ -8,6 +8,10 @@ const OrderSchema = new mongoose.Schema({
   },
   total: Number,
   status: String,
+  active: {
+    type: Boolean,
+    default: true,
+  },
   currency: String,
   createdDate: Date,
   event: {
