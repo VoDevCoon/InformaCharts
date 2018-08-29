@@ -1,2 +1,15 @@
 {
+  "editor.wordWrap": true,
+  "vsicons.dontShowNewVersionMessage": true,
+  "explorer.confirmDelete": false,
+  "workbench.colorTheme": "Monokai",
+  "workbench.colorCustomizations": {
+      "statusBar.background": "#666666",
+      "panel.background": "#333333",
+      "sideBar.background": "#444444",
+      "editor.background": "#282828"
+  },
+  "editor.tokenColorCustomizations": {
+      "variables": "#a2b7cc"
+  }
 }

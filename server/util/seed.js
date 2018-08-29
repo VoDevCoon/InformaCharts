@@ -138,28 +138,28 @@ const addEventOrders = async event => new Promise((resolve, reject) => {
 });
 
 
-const deactiveEventOrders = async event => new Promise((resolve, reject) => {
-  logger.log(`deactive orders for <${event.name}>`);
-  const bulkop = Order.collection.initializeUnorderedBulkOp();
+// const deactiveEventOrders = async event => new Promise((resolve, reject) => {
+//   logger.log(`deactive orders for <${event.name}>`);
+//   const bulkop = Order.collection.initializeUnorderedBulkOp();
 
-  bulkop.find({ event: event._id }).update({ $set: { active: false } });
+//   bulkop.find({ event: event._id }).update({ $set: { active: false } });
 
-  bulkop.execute()
-    .then(result => resolve(result))
-    .catch(err => reject(err.message));
-});
+//   bulkop.execute()
+//     .then(result => resolve(result))
+//     .catch(err => reject(err.message));
+// });
 
-const syncEventOrders = async event => new Promise((resolve, reject) => {
-  if (event.status === 'enable') {
-    addEventOrders(event)
-      .then(result => resolve(result))
-      .catch(err => reject(err.message));
-  } else if (event.status === 'disable') {
-    deactiveEventOrders(event)
-      .then(result => resolve(result))
-      .catch(err => reject(err.message));
-  }
-});
+// const syncEventOrders = async event => new Promise((resolve, reject) => {
+//   if (event.status === 'enable') {
+//     addEventOrders(event)
+//       .then(result => resolve(result))
+//       .catch(err => reject(err.message));
+//   } else if (event.status === 'disable') {
+//     deactiveEventOrders(event)
+//       .then(result => resolve(result))
+//       .catch(err => reject(err.message));
+//   }
+// });
 
 const seed = {
   syncEvents: async () => new Promise((resolve, reject) => {
@@ -182,7 +182,7 @@ const seed = {
       const results = [];
 
       for (let i = 0; i < events.length; i += 1) {
-        const result = await syncEventOrders(events[i]);
+        const result = await addEventOrders(events[i]);
         if (result) {
           results.push(result);
         }
