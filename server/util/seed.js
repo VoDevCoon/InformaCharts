@@ -137,30 +137,6 @@ const addEventOrders = async event => new Promise((resolve, reject) => {
     });
 });
 
-
-// const deactiveEventOrders = async event => new Promise((resolve, reject) => {
-//   logger.log(`deactive orders for <${event.name}>`);
-//   const bulkop = Order.collection.initializeUnorderedBulkOp();
-
-//   bulkop.find({ event: event._id }).update({ $set: { active: false } });
-
-//   bulkop.execute()
-//     .then(result => resolve(result))
-//     .catch(err => reject(err.message));
-// });
-
-// const syncEventOrders = async event => new Promise((resolve, reject) => {
-//   if (event.status === 'enable') {
-//     addEventOrders(event)
-//       .then(result => resolve(result))
-//       .catch(err => reject(err.message));
-//   } else if (event.status === 'disable') {
-//     deactiveEventOrders(event)
-//       .then(result => resolve(result))
-//       .catch(err => reject(err.message));
-//   }
-// });
-
 const seed = {
   syncEvents: async () => new Promise((resolve, reject) => {
     const createdDateString = '2018-01-01T00:00:00';
