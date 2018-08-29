@@ -20,7 +20,8 @@ const searchEvents = async (wooCommerce, createdDate, pageIndex, pageSize) => ne
   const evts = [];
   const query = `products/?status=publish&after=${createdDate}&per_page=${pageSize}&page=${pageIndex}&orderby=date&order=desc`;
 
-  logger.log(`serching newly added events:\nqueryURL=${query}`);
+  // logger.log(`serching newly added events:\nqueryURL=${query}`);
+  // process.stdout.write('.');
 
   wooCommerce.getAsync(query).then((result) => {
     if (result.statusCode === 200 && result.body.length > 0) {
@@ -50,7 +51,7 @@ const searchEvents = async (wooCommerce, createdDate, pageIndex, pageSize) => ne
         searchEvents(wooCommerce, createdDate, nextPage, pageSize)
           .then(results => resolve([...evts, ...results])); // merge the results to evts and resolve to up-level recursive call
       } else {
-        logger.log('reaching last page for newly added events.');
+        // logger.log('reaching last page for newly added events.');
         resolve(evts);
       }
     } else {
@@ -64,8 +65,9 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
   const ods = [];
   const query = `orders?product=${event.eventId}&per_page=${pageSize}&page=${pageIndex}&after=${createdDate}&orderby=date&order=desc`;
 
-  logger.log(`\n** PAGE ${pageIndex} [Orders] <${event.name}>**\n`);
+  // logger.log(`\n** PAGE ${pageIndex} [Orders] <${event.name}>**\n`);
   // logger.log(query);
+  // process.stdout.write('.');
 
   wooCommerce.getAsync(query).then((result) => {
     if (result.statusCode === 200 && result.body.length > 0) {
@@ -88,7 +90,7 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
         searchOrders(wooCommerce, event, createdDate, nextPage, pageSize)
           .then(results => resolve([...ods, ...results]));
       } else {
-        logger.log(`reaching last page for <${event.name}>'s new orders.`);
+        // logger.log(`reaching last page for <${event.name}>'s new orders.`);
         resolve(ods);
       }
     } else {
@@ -103,7 +105,7 @@ const searchNewEventOrders = async event => new Promise((resolve, reject) => {
     .sort({ createdDate: -1 })
     .exec()
     .then((result) => {
-      let createdDateString = '2018-05-01T00:00:00';
+      let createdDateString = config.defaultSearchStartDate.order;
       if (result) {
         // search remote using local timestamp as it's saved in locIal time in woocommerce
         const createdDate = moment(result.createdDate.toISOString());
@@ -112,7 +114,7 @@ const searchNewEventOrders = async event => new Promise((resolve, reject) => {
       // search remote woocommerce orders added after the local latest order
       searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
         .then((orders) => {
-          logger.log(`orders of <${event.name}> found: ${orders.length}`);
+          // logger.log(`orders of <${event.name}> found: ${orders.length}`);
           resolve(orders);
         }).catch(err => reject(err.message));
     });
@@ -121,13 +123,14 @@ const searchNewEventOrders = async event => new Promise((resolve, reject) => {
 const addEventOrders = async event => new Promise((resolve, reject) => {
   searchNewEventOrders(event)
     .then((orders) => {
-      const bulkop = Order.collection.initializeUnorderedBulkOp();
+      logger.log(`found: ${orders.length}`);
+
       if (orders && orders.length > 0) {
+        const bulkop = Order.collection.initializeUnorderedBulkOp();
         orders.forEach(async (order) => {
           bulkop.insert(order);
         });
 
-        logger.log(`add orders for <${event.name}>`);
         bulkop.execute()
           .then(result => resolve(result))
           .catch(err => reject(err.message));
@@ -139,11 +142,10 @@ const addEventOrders = async event => new Promise((resolve, reject) => {
 
 const seed = {
   syncEvents: async () => new Promise((resolve, reject) => {
-    const createdDateString = '2018-01-01T00:00:00';
+    logger.log('>> syncing events');
 
+    const createdDateString = config.defaultSearchStartDate.event;
     searchEvents(wooCommerceAPI, createdDateString, 1, 100).then((events) => {
-      logger.log(`events found: ${events.length}`);
-
       const bulkop = Event.collection.initializeUnorderedBulkOp();
       events.forEach((event) => {
         bulkop.find({ eventId: event.eventId }).upsert().updateOne(event);
@@ -158,6 +160,8 @@ const seed = {
       const results = [];
 
       for (let i = 0; i < events.length; i += 1) {
+        logger.log(`>> searching orders for event <${events[i].name}>`);
+
         const result = await addEventOrders(events[i]);
         if (result) {
           results.push(result);
