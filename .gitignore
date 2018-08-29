@@ -1,2 +1,3 @@
 node_modules/
 conference.json
+*.log

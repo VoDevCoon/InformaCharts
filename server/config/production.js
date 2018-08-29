@@ -12,4 +12,7 @@ module.exports = {
     event: '2016-01-01T00:00:00',
     order: '2018-01-01T00:00:00',
   },
+  workerTaskInterval: {
+    syncData: 10000,
+  },
 };
