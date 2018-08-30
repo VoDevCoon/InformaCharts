@@ -1,6 +1,7 @@
 import WooCommerceAPI from 'woocommerce-api';
 import _ from 'lodash';
 import moment from 'moment-timezone';
+import chalk from 'chalk';
 import Event from '../data/eventModel';
 import Order from '../data/orderModel';
 import config from '../config/config';
@@ -142,7 +143,7 @@ const addEventOrders = async event => new Promise((resolve, reject) => {
 
 const seed = {
   syncEvents: async () => new Promise((resolve, reject) => {
-    logger.log('>> syncing events');
+    process.send('>> syncing events');
 
     const createdDateString = config.defaultSearchStartDate.event;
     searchEvents(wooCommerceAPI, createdDateString, 1, 100).then((events) => {
@@ -160,7 +161,7 @@ const seed = {
       const results = [];
 
       for (let i = 0; i < events.length; i += 1) {
-        logger.log(`>> searching orders for event <${events[i].name}>`);
+        process.send(`>> searching orders for event <${events[i].name}>`);
 
         const result = await addEventOrders(events[i]);
         if (result) {

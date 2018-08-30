@@ -1,11 +1,23 @@
-import mongoose from 'mongoose';
-import seed from './util/seed';
-import config from './config/config';
-import logger from './util/logger';
 import childProcess from 'child_process';
+import logger from './util/logger';
 
-const work = childProcess.spawn(`./util/worker.js`);
-work.send('test');
+const worker = childProcess.fork(`${__dirname}/util/worker.js`);
+
+// const worker = childProcess.spawn('babel-node', [`${__dirname}/util/worker.js`], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+
+worker.on('message', (msg) => {
+  logger.log(msg);
+});
+
+worker.on('error', (err) => {
+  logger.error(err);
+});
+
+worker.on('exit', () => {
+  logger.log('child process exit');
+});
+
+worker.send('syncData');
 
 // mongoose.connect(config.db.url, { useNewUrlParser: true });
 
