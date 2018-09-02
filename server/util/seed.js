@@ -102,23 +102,33 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
 });
 
 const searchNewEventOrders = async event => new Promise((resolve, reject) => {
-  Order.findOne({ event: event._id })
-    .sort({ createdDate: -1 })
-    .exec()
-    .then((result) => {
-      let createdDateString = config.defaultSearchStartDate.order;
-      if (result) {
-        // search remote using local timestamp as it's saved in locIal time in woocommerce
-        const createdDate = moment(result.createdDate.toISOString());
-        createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
-      }
-      // search remote woocommerce orders added after the local latest order
-      searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
+  //search order after the date when the event was created
+  const eventCreatedDate = moment(result.createdDate.toISOString());
+  let createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+
+  searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
         .then((orders) => {
           // logger.log(`orders of <${event.name}> found: ${orders.length}`);
           resolve(orders);
         }).catch(err => reject(err.message));
-    });
+
+  // Order.findOne({ event: event._id })
+  //   .sort({ createdDate: -1 })
+  //   .exec()
+  //   .then((result) => {
+  //     let createdDateString = config.defaultSearchStartDate.order;
+  //     if (result) {
+  //       // search remote using local timestamp as it's saved in locIal time in woocommerce
+  //       const createdDate = moment(result.createdDate.toISOString());
+  //       createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+  //     }
+  //     // search remote woocommerce orders added after the local latest order
+  //     searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
+  //       .then((orders) => {
+  //         // logger.log(`orders of <${event.name}> found: ${orders.length}`);
+  //         resolve(orders);
+  //       }).catch(err => reject(err.message));
+  //   });
 });
 
 const addEventOrders = async event => new Promise((resolve, reject) => {
@@ -146,27 +156,35 @@ const seed = {
     process.send('>> syncing events');
 
     const createdDateString = config.defaultSearchStartDate.event;
-    searchEvents(wooCommerceAPI, createdDateString, 1, 100).then((events) => {
-      const bulkop = Event.collection.initializeUnorderedBulkOp();
-      events.forEach((event) => {
-        bulkop.find({ eventId: event.eventId }).upsert().updateOne(event);
-      });
+    // searchEvents(wooCommerceAPI, createdDateString, 1, 100).then((events) => {
+    //   const bulkop = Event.collection.initializeUnorderedBulkOp();
+    //   events.forEach((event) => {
+    //     bulkop.find({ eventId: event.eventId }).upsert().updateOne(event);
+    //   });
 
-      bulkop.execute().then(result => resolve(result)).catch(err => reject(err.message));
-    });
+    //   bulkop.execute().then(result => resolve(result)).catch(err => reject(err.message));
+    // });
   }),
 
-  syncOrders: async () => new Promise((resolve) => {
+  syncOrders: async (numberOfBatches) => new Promise((resolve) => {
     Event.find({}).then(async (events) => {
+      const batches = _.values(_.groupBy((events, numberOfBatches) => {
+        return Math.floor(i % numberOfBatches);
+      }));
       const results = [];
 
-      for (let i = 0; i < events.length; i += 1) {
-        process.send(`>> searching orders for event <${events[i].name}>`);
+      for (let j = 0; j < batches.length; j += 1) {
+        for (let i = 0; i < events.length; i += 1) {
+          process.send(`>> searching orders for event <${events[i].name}>`);
 
-        const result = await addEventOrders(events[i]);
-        if (result) {
-          results.push(result);
+          // const result = await addEventOrders(events[i]);
+          // if (result) {
+          //   results.push(result);
+          // }
         }
+
+        setTimeout(null, Math.floor(config.workerTaskInterval.syncData / numberOfBatches));
+        process.send(`syncing orders -> batch number ${j}`);
       }
 
       resolve(results);

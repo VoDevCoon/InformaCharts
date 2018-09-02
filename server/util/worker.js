@@ -13,7 +13,7 @@ const syncData = function () {
 
   seed.syncEvents().then(async (syncEventResult) => {
     process.send(`Events added: ${syncEventResult.nUpserted} | Event(s) modified: ${syncEventResult.nModified}`);
-    seed.syncOrders()
+    seed.syncOrders(3)
       .then((syncOrderResult) => {
         let totalInserted = 0;
         if (syncOrderResult && syncOrderResult.length > 0) {
