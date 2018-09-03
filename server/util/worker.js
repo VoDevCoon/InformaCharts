@@ -13,7 +13,8 @@ const syncData = function () {
 
   seed.syncEvents().then(async (syncEventResult) => {
     process.send(`Events added: ${syncEventResult.nUpserted} | Event(s) modified: ${syncEventResult.nModified}`);
-    seed.syncOrders(3)
+
+    seed.syncOrders(8) // sync events' orders in 8 batches
       .then((syncOrderResult) => {
         let totalInserted = 0;
         if (syncOrderResult && syncOrderResult.length > 0) {

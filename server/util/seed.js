@@ -67,8 +67,7 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
   const query = `orders?product=${event.eventId}&per_page=${pageSize}&page=${pageIndex}&after=${createdDate}&orderby=date&order=desc`;
 
   // logger.log(`\n** PAGE ${pageIndex} [Orders] <${event.name}>**\n`);
-  // logger.log(query);
-  // process.stdout.write('.');
+  logger.log(query);
 
   wooCommerce.getAsync(query).then((result) => {
     if (result.statusCode === 200 && result.body.length > 0) {
@@ -102,33 +101,21 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
 });
 
 const searchNewEventOrders = async event => new Promise((resolve, reject) => {
-  //search order after the date when the event was created
-  const eventCreatedDate = moment(result.createdDate.toISOString());
-  let createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+  // search event's latest order
+  const eventCreatedDate = moment(event.createdDate.toISOString());
+  const createdDateString = eventCreatedDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+
+  Order.findOne({ _id: event._id }).sort({ createdDate: -1 }).exec().then((order) => {
+    if (order) {
+      logger.log(`latest order for ${event.name} is ${order.orderId}`);
+    }
+  });
 
   searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
-        .then((orders) => {
-          // logger.log(`orders of <${event.name}> found: ${orders.length}`);
-          resolve(orders);
-        }).catch(err => reject(err.message));
-
-  // Order.findOne({ event: event._id })
-  //   .sort({ createdDate: -1 })
-  //   .exec()
-  //   .then((result) => {
-  //     let createdDateString = config.defaultSearchStartDate.order;
-  //     if (result) {
-  //       // search remote using local timestamp as it's saved in locIal time in woocommerce
-  //       const createdDate = moment(result.createdDate.toISOString());
-  //       createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
-  //     }
-  //     // search remote woocommerce orders added after the local latest order
-  //     searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
-  //       .then((orders) => {
-  //         // logger.log(`orders of <${event.name}> found: ${orders.length}`);
-  //         resolve(orders);
-  //       }).catch(err => reject(err.message));
-  //   });
+    .then((orders) => {
+      // logger.log(`orders of <${event.name}> found: ${orders.length}`);
+      resolve(orders);
+    }).catch(err => reject(err.message));
 });
 
 const addEventOrders = async event => new Promise((resolve, reject) => {
@@ -139,7 +126,8 @@ const addEventOrders = async event => new Promise((resolve, reject) => {
       if (orders && orders.length > 0) {
         const bulkop = Order.collection.initializeUnorderedBulkOp();
         orders.forEach(async (order) => {
-          bulkop.insert(order);
+          // bulkop.insert(order);
+          bulkop.find({ orderId: order.orderId }).upsert().updateOne(order);
         });
 
         bulkop.execute()
@@ -151,40 +139,45 @@ const addEventOrders = async event => new Promise((resolve, reject) => {
     });
 });
 
+const sleep = async ms => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
 const seed = {
   syncEvents: async () => new Promise((resolve, reject) => {
     process.send('>> syncing events');
 
     const createdDateString = config.defaultSearchStartDate.event;
-    // searchEvents(wooCommerceAPI, createdDateString, 1, 100).then((events) => {
-    //   const bulkop = Event.collection.initializeUnorderedBulkOp();
-    //   events.forEach((event) => {
-    //     bulkop.find({ eventId: event.eventId }).upsert().updateOne(event);
-    //   });
+    searchEvents(wooCommerceAPI, createdDateString, 1, 100).then((events) => {
+      const bulkop = Event.collection.initializeUnorderedBulkOp();
+      events.forEach((event) => {
+        bulkop.find({ eventId: event.eventId }).upsert().updateOne(event);
+      });
 
-    //   bulkop.execute().then(result => resolve(result)).catch(err => reject(err.message));
-    // });
+      bulkop.execute().then(result => resolve(result)).catch(err => reject(err.message));
+    });
   }),
 
-  syncOrders: async (numberOfBatches) => new Promise((resolve) => {
-    Event.find({}).then(async (events) => {
-      const batches = _.values(_.groupBy((events, numberOfBatches) => {
-        return Math.floor(i % numberOfBatches);
-      }));
+  syncOrders: async numberOfBatches => new Promise((resolve) => {
+    Event.find({ status: 'enable' }).then(async (events) => {
+      const batchSize = Math.floor(events.length / numberOfBatches);
+      const batches = _.chunk(events, batchSize);
       const results = [];
 
       for (let j = 0; j < batches.length; j += 1) {
-        for (let i = 0; i < events.length; i += 1) {
-          process.send(`>> searching orders for event <${events[i].name}>`);
+        const batchEvents = batches[j];
+        process.send(`syncing orders -> batch number ${j}`);
 
-          // const result = await addEventOrders(events[i]);
-          // if (result) {
-          //   results.push(result);
-          // }
+        for (let i = 0; i < batchEvents.length; i += 1) {
+          process.send(`>> searching orders for event <${batchEvents[i].name}>`);
+
+          const result = await addEventOrders(batchEvents[i]);
+          if (result) {
+            results.push(result);
+          }
         }
 
-        setTimeout(null, Math.floor(config.workerTaskInterval.syncData / numberOfBatches));
-        process.send(`syncing orders -> batch number ${j}`);
+        await sleep(Math.floor(config.workerTaskInterval.syncData / (numberOfBatches + 1)));
       }
 
       resolve(results);

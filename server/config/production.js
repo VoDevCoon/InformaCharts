@@ -13,6 +13,6 @@ module.exports = {
     order: '2018-01-01T00:00:00',
   },
   workerTaskInterval: {
-    syncData: 60000,
+    syncData: 1000 * 60 * 30,
   },
 };
