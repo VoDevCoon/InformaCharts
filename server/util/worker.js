@@ -27,16 +27,35 @@ const syncData = function () {
   }).catch(err => logger.error(err));
 };
 
+const checkNoProfitOrder = function () {
+  mongoose.connect(config.db.url, { useNewUrlParser: true });
+
+  seed.checkNoProfitOrders('failed')
+    .then(checkFailedOrderResult => {
+      process.send(`Failed orders updated: ${checkFailedOrderResult.nModified}`);
+
+      seed.checkNoProfitOrders('cancelled')
+        .then(checkCancelledOrderResult => {
+          process.send(`Cancelled orders updated: ${JSON.stringify(checkCancelledOrderResult)}`);
+        })
+        .catch(err => process.send(`Error on checking no-profit orders: ${err}`));
+    })
+    .catch(err => process.send(`Error on checking no-profit orders: ${err}`));
+};
+
 const runTask = function (msg) {
   switch (msg) {
     case 'syncData':
       syncData(); // run task immediately
       setInterval(() => { syncData(); }, config.workerTaskInterval.syncData);
       break;
-    case 'test': {
+    case 'checkOrders':
+      checkNoProfitOrder(); // run task immediately
+      setInterval(() => { checkNoProfitOrder(); }, config.workerTaskInterval.syncData);
+      break;
+    case 'test':
       setInterval(() => { process.send('child process test message'); }, config.workerTaskInterval.syncData);
       break;
-    }
     default: break;
   }
 };

@@ -9,10 +9,10 @@ module.exports = {
     url: 'mongodb://localhost/informacharts',
   },
   defaultSearchStartDate: {
-    event: '2016-01-01T00:00:00',
-    order: '2018-01-01T00:00:00',
+    event: '2015-01-01T00:00:00',
+    order: '2015-01-01T00:00:00',
   },
   workerTaskInterval: {
-    syncData: 1000 * 60 * 30,
+    syncData: 1000 * 60 * 15,
   },
 };

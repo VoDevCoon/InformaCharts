@@ -3,8 +3,6 @@ import logger from './util/logger';
 
 const worker = childProcess.fork(`${__dirname}/util/worker.js`);
 
-// const worker = childProcess.spawn('babel-node', [`${__dirname}/util/worker.js`], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
-
 worker.on('message', (msg) => {
   logger.log(msg);
 });
@@ -17,7 +15,7 @@ worker.on('exit', () => {
   logger.log('child process exit');
 });
 
-worker.send('syncData');
+worker.send('checkOrders');
 
 // mongoose.connect(config.db.url, { useNewUrlParser: true });
 
