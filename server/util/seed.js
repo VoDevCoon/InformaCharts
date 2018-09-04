@@ -218,9 +218,9 @@ const seed = {
     });
   }),
 
-  checkNoProfitOrders: async (status) => new Promise((resolve, reject) => {
-    let createdDate = moment(config.defaultSearchStartDate.order);
-    let createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+  checkNoProfitOrders: async status => new Promise((resolve, reject) => {
+    const createdDate = moment(config.defaultSearchStartDate.order);
+    const createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
 
     searchOrdersByStatus(wooCommerceAPI, status, createdDateString, 1, 100)
       .then((orders) => {

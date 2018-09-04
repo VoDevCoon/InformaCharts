@@ -14,7 +14,7 @@ const syncData = function () {
   seed.syncEvents().then(async (syncEventResult) => {
     process.send(`Events added: ${syncEventResult.nUpserted} | Event(s) modified: ${syncEventResult.nModified}`);
 
-    seed.syncOrders(8) // sync events' orders in 8 batches
+    seed.syncOrders(config.syncOrderBatches)
       .then((syncOrderResult) => {
         let totalInserted = 0;
         if (syncOrderResult && syncOrderResult.length > 0) {
@@ -27,15 +27,15 @@ const syncData = function () {
   }).catch(err => logger.error(err));
 };
 
-const checkNoProfitOrder = function () {
+const checkNoProfitOrders = function () {
   mongoose.connect(config.db.url, { useNewUrlParser: true });
 
   seed.checkNoProfitOrders('failed')
-    .then(checkFailedOrderResult => {
+    .then((checkFailedOrderResult) => {
       process.send(`Failed orders updated: ${checkFailedOrderResult.nModified}`);
 
       seed.checkNoProfitOrders('cancelled')
-        .then(checkCancelledOrderResult => {
+        .then((checkCancelledOrderResult) => {
           process.send(`Cancelled orders updated: ${JSON.stringify(checkCancelledOrderResult)}`);
         })
         .catch(err => process.send(`Error on checking no-profit orders: ${err}`));
@@ -50,8 +50,7 @@ const runTask = function (msg) {
       setInterval(() => { syncData(); }, config.workerTaskInterval.syncData);
       break;
     case 'checkOrders':
-      checkNoProfitOrder(); // run task immediately
-      setInterval(() => { checkNoProfitOrder(); }, config.workerTaskInterval.syncData);
+      setInterval(() => { checkNoProfitOrders(); }, config.workerTaskInterval.syncData * 3);
       break;
     case 'test':
       setInterval(() => { process.send('child process test message'); }, config.workerTaskInterval.syncData);
