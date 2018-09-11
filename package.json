@@ -32,7 +32,7 @@
     "express": "^4.16.3",
     "lodash": "^4.17.10",
     "moment-timezone": "^0.5.21",
-    "mongoose": "^5.2.9",
+    "mongoose": "^5.2.14",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "woocommerce-api": "^1.4.2"

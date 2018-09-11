@@ -5,8 +5,10 @@ import seed from './seed';
 import config from '../config/config';
 import logger from './logger';
 
+mongoose.connect(config.db.url, { useNewUrlParser: true });
+
 const syncData = function () {
-  mongoose.connect(config.db.url, { useNewUrlParser: true });
+  // mongoose.connect(config.db.url, { useNewUrlParser: true });
 
   const ts = moment.tz('Australia/Sydney').format('YYYY-MM-D hh:mm:ss');
   process.send(chalk.yellow(`>> start syncing data in the child process | ${ts}`));
@@ -28,7 +30,7 @@ const syncData = function () {
 };
 
 const checkNoProfitOrders = function () {
-  mongoose.connect(config.db.url, { useNewUrlParser: true });
+  // mongoose.connect(config.db.url, { useNewUrlParser: true });
 
   seed.checkNoProfitOrders('failed')
     .then((checkFailedOrderResult) => {

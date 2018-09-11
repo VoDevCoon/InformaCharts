@@ -29,8 +29,9 @@ const searchEvents = async (wooCommerce, createdDate, pageIndex, pageSize) => ne
       const events = JSON.parse(result.body);
 
       events.forEach((c) => {
+
         const event = {
-          eventId: c.id,
+          eventId: c.id.toString(),
           name: c.name,
           eventCode: _.filter(c.meta_data, { key: 'event_code' })[0].value,
           categories: _.map(c.categories, 'name'),
@@ -38,7 +39,9 @@ const searchEvents = async (wooCommerce, createdDate, pageIndex, pageSize) => ne
           startDate: _.filter(c.meta_data, { key: 'starts' })[0].value
             ? getDate(_.filter(c.meta_data, { key: 'starts' })[0].value)
             : new Date('2001-01-01'),
-          duration: _.filter(c.meta_data, { key: 'duration' })[0].value,
+          duration: _.filter(c.meta_data, { key: 'duration' })[0].value = ''
+            ? 0
+            : Number.parseInt(_.filter(c.meta_data, { key: 'duration' })[0].value),
           createdDate: Date.parse(`${c.date_created_gmt}Z`), // save date to mongodb in UTC
         };
 
@@ -72,10 +75,10 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
       const orders = JSON.parse(result.body);
       orders.forEach((o) => {
         const order = {
-          orderId: o.id,
+          orderId: o.id.toString(),
           status: o.status,
           currency: o.currency,
-          total: o.total,
+          total: Number.parseFloat(o.total),
           createdDate: Date.parse(`${o.date_created_gmt}Z`), // save date to mongodb in UTC
           event: event._id,
         };
@@ -133,18 +136,20 @@ const searchNewEventOrders = async event => new Promise((resolve, reject) => {
   // search event's latest order
   // use the event created date as search start date if no orders
   // otherwise use the latest order's created date
-  let createdDate = moment(event.createdDate.toISOString());
-  let createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+  // let createdDate = moment(event.createdDate).toISOString();
+  let createdDateString = moment(event.createdDate).tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+
 
   Order.findOne({ event: event._id })
     .sort({ createdDate: -1 })
     .exec()
     .then((result) => {
       if (result) {
-        createdDate = moment(result.createdDate.toISOString());
-        createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+        // createdDate = moment(result.createdDate);
+        createdDateString = moment(result.createdDate).tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
       }
 
+      logger.log(createdDateString);
       searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
         .then((orders) => {
           resolve(orders);

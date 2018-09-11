@@ -13,7 +13,7 @@ const OrderSchema = new mongoose.Schema({
     default: true,
   },
   currency: String,
-  createdDate: Date,
+  createdDate: Number,
   event: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'event',
