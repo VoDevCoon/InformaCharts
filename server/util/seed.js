@@ -1,7 +1,6 @@
 import WooCommerceAPI from 'woocommerce-api';
 import _ from 'lodash';
 import moment from 'moment-timezone';
-import chalk from 'chalk';
 import Event from '../data/eventModel';
 import Order from '../data/orderModel';
 import config from '../config/config';

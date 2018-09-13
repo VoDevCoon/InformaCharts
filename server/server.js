@@ -31,12 +31,12 @@ mongoose.connect(config.db.url, { useNewUrlParser: true });
 
 EventService.getAllEventsByStatus('enable').then(async events => {
   const orders = [];
-  const startDate = moment().tz('Australia/Sydney').startOf('isoWeek').subtract(1, 'weeks');
+  const startDate = moment().tz('Australia/Sydney').startOf('month').subtract(1, 'months');
 
-  for (let i = 0; i < events.length; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     // logger.log(events[i].name);
-    let eventOrders = await OrderService.eventOrdersByDayOfWeek(events[i], startDate.unix() * 1000);
-
+    //let eventOrders = await OrderService.eventOrdersByDayOfWeek(events[i], startDate.unix() * 1000);
+    let eventOrders = await OrderService.eventOrdersByDayOfMonth(events[i], startDate.unix() * 1000);
     orders.push(eventOrders);
   }
 
