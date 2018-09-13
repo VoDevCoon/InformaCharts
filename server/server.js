@@ -35,7 +35,7 @@ EventService.getAllEventsByStatus('enable').then(async events => {
 
   for (let i = 0; i < events.length; i += 1) {
     // logger.log(events[i].name);
-    let eventOrders = await OrderService.eventOrdersByDayOfWeek(events[i]._id, startDate.unix() * 1000);
+    let eventOrders = await OrderService.eventOrdersByDayOfWeek(events[i], startDate.unix() * 1000);
 
     orders.push(eventOrders);
   }
