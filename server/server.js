@@ -1,13 +1,39 @@
 import childProcess from 'child_process';
-import logger from './util/logger';
 import mongoose from 'mongoose';
+import express from 'express';
+import bodyParser from 'body-parser';
 import moment from 'moment-timezone';
+import path from 'path';
 import _ from 'lodash';
+import logger from './util/logger';
+import eventRouter from './route/eventRoutes';
 import config from './config/config';
 import EventService from './services/eventService';
 import OrderService from './services/orderService';
 import Event from './data/eventModel';
 import Order from './data/orderModel';
+
+const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(__dirname));
+
+mongoose.connect(config.db.url, { useNewUrlParser: true });
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/index.html'));
+});
+
+app.get('/events', (req, res) => {
+  EventService.getAllEventsByStatus(req.query.status)
+    .then((events) => { res.send(events); })
+    .catch((err) => { res.send(err); });
+});
+
+// app.use('/events', eventRouter);
+app.listen(config.port);
+logger.log(`listen to: ${config.port}`);
 
 
 // const worker = childProcess.fork(`${__dirname}/util/worker.js`);
@@ -27,18 +53,18 @@ import Order from './data/orderModel';
 // worker.send('syncData');
 // worker.send('checkOrders');
 
-mongoose.connect(config.db.url, { useNewUrlParser: true });
 
-EventService.getAllEventsByStatus('enable').then(async events => {
-  const orders = [];
-  const startDate = moment().tz('Australia/Sydney').startOf('month').subtract(1, 'months');
 
-  for (let i = 0; i < 5; i += 1) {
-    // logger.log(events[i].name);
-    //let eventOrders = await OrderService.eventOrdersByDayOfWeek(events[i], startDate.unix() * 1000);
-    let eventOrders = await OrderService.eventOrdersByDayOfMonth(events[i], startDate.unix() * 1000);
-    orders.push(eventOrders);
-  }
+// EventService.getAllEventsByStatus('enable').then(async (events) => {
+//   const orders = [];
+//   const startDate = moment().tz('Australia/Sydney').startOf('month').subtract(1, 'months');
 
-  logger.log(orders);
-}).catch (err => logger.log(err.message));
+//   for (let i = 0; i < 5; i += 1) {
+//     // logger.log(events[i].name);
+//     // let eventOrders = await OrderService.eventOrdersByDayOfWeek(events[i], startDate.unix() * 1000);
+//     const eventOrders = await OrderService.eventOrdersByDayOfMonth(events[i], startDate.unix() * 1000);
+//     orders.push(eventOrders);
+//   }
+
+//   logger.log(orders);
+// }).catch(err => logger.log(err.message));

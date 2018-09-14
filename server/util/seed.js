@@ -28,7 +28,6 @@ const searchEvents = async (wooCommerce, createdDate, pageIndex, pageSize) => ne
       const events = JSON.parse(result.body);
 
       events.forEach((c) => {
-
         const event = {
           eventId: c.id.toString(),
           name: c.name,
@@ -40,7 +39,7 @@ const searchEvents = async (wooCommerce, createdDate, pageIndex, pageSize) => ne
             : new Date('2001-01-01'),
           duration: _.filter(c.meta_data, { key: 'duration' })[0].value = ''
             ? 0
-            : Number.parseInt(_.filter(c.meta_data, { key: 'duration' })[0].value),
+            : Number.parseInt(_.filter(c.meta_data, { key: 'duration' })[0].value, 10),
           createdDate: Date.parse(`${c.date_created_gmt}Z`), // save date to mongodb in UTC
         };
 
@@ -110,7 +109,7 @@ const searchOrdersByStatus = async (wooCommerce, status, createdDate, pageIndex,
       const orders = JSON.parse(result.body);
       orders.forEach((o) => {
         const order = {
-          orderId: o.id
+          orderId: o.id,
         };
 
         ods.push(order);
@@ -233,7 +232,7 @@ const seed = {
         if (orders && orders.length > 0) {
           const bulkop = Order.collection.initializeUnorderedBulkOp();
           orders.forEach(async (order) => {
-            bulkop.find({ orderId: order.orderId }).update({ $set: { status: status } });
+            bulkop.find({ orderId: order.orderId }).update({ $set: { status } });
           });
 
           bulkop.execute()
