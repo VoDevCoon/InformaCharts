@@ -11,6 +11,7 @@ const findEventOrdersByDateRange = async (eventId, startDate, endDate) => new Pr
 });
 
 const eventOrdersByDate = async (eventId, date) => {
+  // logger.log(`eventid: ${eventId} | date: ${moment(date)}`);
   const orders = await findEventOrdersByDateRange(eventId, date, moment(date).add(1, 'days'));
   let ordersByDate = null;
 
@@ -30,15 +31,18 @@ const eventOrdersByDate = async (eventId, date) => {
 };
 
 const OrderService = {
-  eventOrdersByDayOfMonth: async (event, startDateOfMonth) => {
+  eventOrdersByDayOfMonth: async (event, monthsBefore) => {
     const dailyOrders = [];
     let totalBookings = 0;
     let totalRevenue = 0;
 
+    const startDateOfMonth = moment().tz('Australia/Sydney').startOf('month').subtract(monthsBefore, 'months')
+      .unix() * 1000;
+
     for (let i = 0; i < moment(startDateOfMonth).daysInMonth(); i += 1) {
-      const ordersOfDate = await eventOrdersByDate(event._id, moment(startDateOfMonth).add(i, 'days'));
-      const date = moment(startDateOfMonth).add(i, 'days').date();
-      dailyOrders.push({ [date]: ordersOfDate });
+      let date = moment(startDateOfMonth).add(i, 'days');
+      let ordersOfDate = await eventOrdersByDate(event._id, date);
+      dailyOrders.push({ [date.date()]: ordersOfDate });
       totalBookings += ordersOfDate.bookings;
       totalRevenue += ordersOfDate.revenue;
     }
@@ -46,6 +50,7 @@ const OrderService = {
     const ordersByMonth = {
       eventId: event._id,
       eventName: event.name,
+      eventCode: event.eventCode,
       dailyOrders,
       totalBookings,
       totalRevenue,
@@ -54,21 +59,25 @@ const OrderService = {
     return ordersByMonth;
   },
 
-  eventOrdersByDayOfWeek: async (event, startDateOfWeek) => {
+  eventOrdersByDayOfWeek: async (event, weeksBefore) => {
     const dailyOrders = [];
     let totalBookings = 0;
     let totalRevenue = 0;
 
+    const startDateOfWeek = moment().tz('Australia/Sydney').startOf('isoWeek').subtract(weeksBefore, 'weeks')
+      .unix() * 1000;
+
     for (let i = 0; i < 7; i += 1) {
-      const ordersOfDate = await eventOrdersByDate(event._id, moment(startDateOfWeek).add(i, 'days'));
-      const day = moment(startDateOfWeek).add(i, 'days').format('ddd');
-      dailyOrders.push({ [day]: ordersOfDate });
+      let date = moment(startDateOfWeek).add(i, 'days');
+      let ordersOfDate = await eventOrdersByDate(event._id, date);
+      dailyOrders.push({ [date.format('ddd')]: ordersOfDate });
       totalBookings += ordersOfDate.bookings;
       totalRevenue += ordersOfDate.revenue;
     }
 
     const ordersByWeek = {
       eventId: event._id,
+      eventCode: event.eventCode,
       eventName: event.name,
       dailyOrders,
       totalBookings,

@@ -47,7 +47,6 @@ logger.log(`listen to: ${config.port}`);
 // worker.send('checkOrders');
 
 
-
 // EventService.getAllEventsByStatus('enable').then(async (events) => {
 //   const orders = [];
 //   const startDate = moment().tz('Australia/Sydney').startOf('month').subtract(1, 'months');
