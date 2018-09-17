@@ -4,10 +4,15 @@ import logger from '../util/logger';
 
 const router = express.Router();
 
-router.get('/events', (req, res) => {
-  logger.log(res.params);
+router.get('/:status', (req, res) => {
   EventService.getAllEventsByStatus(req.params.status)
-    .then((events) => { res.send(events); })
+    .then((events) => { res.json(events); })
+    .catch((err) => { res.send(err); });
+});
+
+router.get('/:status/:pageIndex-:pageSize', (req, res) => {
+  EventService.getEventsWithPaging(req.params.status, req.params.pageIndex, req.params.pageSize)
+    .then((events) => { res.json(events); })
     .catch((err) => { res.send(err); });
 });
 
