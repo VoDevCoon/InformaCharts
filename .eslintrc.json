@@ -4,8 +4,14 @@
     "func-names": ["error", "never"],
     "no-unused-vars": "warn",
     "no-underscore-dangle": "off",
-    "max-len": "warn",
-    "no-await-in-loop": "warn"
+    "max-len": "off",
+    "no-await-in-loop": "off",
+    "no-bitwise": [
+      "warn",
+      {
+        "allow": ["~"]
+      }
+    ]
   },
   "parserOptions": {
     "ecmaVersion": 2018

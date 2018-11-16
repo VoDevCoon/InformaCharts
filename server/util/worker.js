@@ -34,11 +34,11 @@ const checkNoProfitOrders = function () {
 
   seed.checkNoProfitOrders('failed')
     .then((checkFailedOrderResult) => {
-      process.send(`Failed orders updated: ${checkFailedOrderResult.nModified}`);
+      if (checkFailedOrderResult) process.send(`failed orders updated: ${checkFailedOrderResult.nModified}`);
 
       seed.checkNoProfitOrders('cancelled')
         .then((checkCancelledOrderResult) => {
-          process.send(`Cancelled orders updated: ${JSON.stringify(checkCancelledOrderResult)}`);
+          if (checkCancelledOrderResult) process.send(`cancelled orders updated: ${checkCancelledOrderResult.nModified}`);
         })
         .catch(err => process.send(`Error on checking no-profit orders: ${err}`));
     })
@@ -52,6 +52,7 @@ const runTask = function (msg) {
       setInterval(() => { syncData(); }, config.workerTaskInterval.syncData);
       break;
     case 'checkOrders':
+      //checkNoProfitOrders();
       setInterval(() => { checkNoProfitOrders(); }, config.workerTaskInterval.syncData * 3);
       break;
     case 'test':

@@ -99,6 +99,16 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
   });
 });
 
+// const searchOrderById = async (wooCommerce, orderId) => new Promise((resolve, reject) => {
+//   const query = `orders/${orderId}`;
+//   wooCommerce.getAsync(query).then((result) => {
+//     if (result.statusCode === 200 && result.body.length > 0) {
+//       const order = JSON.parse(result.body);
+//       logger.log(order);
+//     }
+//   });
+// });
+
 const searchOrdersByStatus = async (wooCommerce, status, createdDate, pageIndex, pageSize) => new Promise((resolve, reject) => {
   const ods = [];
   const query = `orders?status=${status}&per_page=${pageSize}&page=${pageIndex}&after=${createdDate}&orderby=date&order=desc`;
@@ -109,7 +119,7 @@ const searchOrdersByStatus = async (wooCommerce, status, createdDate, pageIndex,
       const orders = JSON.parse(result.body);
       orders.forEach((o) => {
         const order = {
-          orderId: o.id,
+          orderId: o.id.toString().trim(),
         };
 
         ods.push(order);
@@ -147,7 +157,7 @@ const searchNewEventOrders = async event => new Promise((resolve, reject) => {
         createdDateString = moment(result.createdDate).tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
       }
 
-      logger.log(createdDateString);
+      // logger.log(createdDateString);
       searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
         .then((orders) => {
           resolve(orders);
@@ -225,9 +235,41 @@ const seed = {
     const createdDate = moment(config.defaultSearchStartDate.order);
     const createdDateString = createdDate.tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
 
+    // searchOrderById(wooCommerceAPI, '41385');
+
     searchOrdersByStatus(wooCommerceAPI, status, createdDateString, 1, 100)
       .then((orders) => {
-        logger.log(`found ${status} orders: ${orders.length}`);
+        logger.log(`=> found latest ${status} orders: ${orders.length}`);
+
+        // check if existing non-profit orders' status have been changed
+        // if can't find the orderId in the latest non-profit orders,
+        // update order status from 'failed'/'cancelled' to 'processing'
+        const orderIds = [];
+        orders.map(obj => orderIds.push(obj.orderId));
+
+        // orderIds.splice(orderIds.indexOf('20992'), 5);
+        Order.find({ status })
+          .then((nonProfitOrders) => {
+            if (nonProfitOrders.length > 0) {
+              logger.log(`checking existing ${status} orders, total of: ${nonProfitOrders.length} `);
+
+              let matchingCount = 0;
+              nonProfitOrders.forEach((order) => {
+                if (orderIds.indexOf(order.orderId) < 0) {
+                  Order.update({ orderId: order.orderId }, { $set: { status: 'processing' } }, (err) => {
+                    if (err) {
+                      logger.error(err);
+                    } else {
+                      logger.log(`order modified: ${order.orderId}`);
+                    }
+                  });
+                } else {
+                  matchingCount += 1;
+                }
+              });
+              logger.log(`matching: ${matchingCount}`);
+            }
+          });
 
         if (orders && orders.length > 0) {
           const bulkop = Order.collection.initializeUnorderedBulkOp();

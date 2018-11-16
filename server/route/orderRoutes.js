@@ -1,7 +1,6 @@
 import express from 'express';
 import Event from '../data/eventModel';
 import OrderService from '../services/orderService';
-import logger from '../util/logger';
 
 const router = express.Router();
 
@@ -32,12 +31,12 @@ router.get('/:eventCode/:range/:startDate', (req, res) => {
 });
 
 router.post('/:range/:startDate', async (req, res) => {
-  const events = req.body.events;
+  const { events } = req.body;
   if (events && events.length > 0) {
     const orders = [];
     try {
       for (let i = 0; i < events.length; i += 1) {
-        let event = await Event.findOne({ eventCode: events[i] });
+        const event = await Event.findOne({ eventCode: events[i] });
         if (event) {
           let eventOrders = {};
           if (req.params.range === 'week') {

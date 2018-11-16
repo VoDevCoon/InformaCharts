@@ -40,8 +40,8 @@ const OrderService = {
       .unix() * 1000;
 
     for (let i = 0; i < moment(startDateOfMonth).daysInMonth(); i += 1) {
-      let date = moment(startDateOfMonth).add(i, 'days');
-      let ordersOfDate = await eventOrdersByDate(event._id, date);
+      const date = moment(startDateOfMonth).add(i, 'days');
+      const ordersOfDate = await eventOrdersByDate(event._id, date);
       dailyOrders.push({ [date.date()]: ordersOfDate });
       totalBookings += ordersOfDate.bookings;
       totalRevenue += ordersOfDate.revenue;
@@ -68,8 +68,8 @@ const OrderService = {
       .unix() * 1000;
 
     for (let i = 0; i < 7; i += 1) {
-      let date = moment(startDateOfWeek).add(i, 'days');
-      let ordersOfDate = await eventOrdersByDate(event._id, date);
+      const date = moment(startDateOfWeek).add(i, 'days');
+      const ordersOfDate = await eventOrdersByDate(event._id, date);
       dailyOrders.push({ [date.format('ddd')]: ordersOfDate });
       totalBookings += ordersOfDate.bookings;
       totalRevenue += ordersOfDate.revenue;

@@ -1,6 +1,5 @@
 import express from 'express';
 import EventService from '../services/eventService';
-import logger from '../util/logger';
 
 const router = express.Router();
 
