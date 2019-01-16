@@ -67,10 +67,10 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
   const ods = [];
   const query = `orders?product=${event.eventId}&per_page=${pageSize}&page=${pageIndex}&after=${createdDate}&orderby=date&order=desc`;
 
-  // logger.log(query);
   wooCommerce.getAsync(query).then((result) => {
     if (result.statusCode === 200 && result.body.length > 0) {
       const orders = JSON.parse(result.body);
+
       orders.forEach((o) => {
         const order = {
           orderId: o.id.toString(),
@@ -80,7 +80,6 @@ const searchOrders = async (wooCommerce, event, createdDate, pageIndex, pageSize
           createdDate: Date.parse(`${o.date_created_gmt}Z`), // save date to mongodb in UTC
           event: event._id,
         };
-
         ods.push(order);
       });
 
@@ -153,12 +152,17 @@ const searchNewEventOrders = async event => new Promise((resolve, reject) => {
     .exec()
     .then((result) => {
       if (result) {
-        // createdDate = moment(result.createdDate);
         createdDateString = moment(result.createdDate).tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
       }
 
-      // logger.log(createdDateString);
-      searchOrders(wooCommerceAPI, event, createdDateString, 1, 100)
+      // Adjust the datetime to compensate Resolution changes default timezone
+      // after the change done by Resolution,
+      // date_created of the order is converted to Australia/Sydney time (+10/+11 hours)
+      // then compare to the datetime sent to woocommerce API
+      // which cause &after not working properly
+      const adjustedDateString = moment(createdDateString.concat('Z')).tz('Australia/Sydney').format('YYYY-MM-DDTHH:mm:ss');
+
+      searchOrders(wooCommerceAPI, event, adjustedDateString, 1, 100)
         .then((orders) => {
           resolve(orders);
         }).catch(err => reject(err.message));

@@ -52,7 +52,7 @@ const runTask = function (msg) {
       setInterval(() => { syncData(); }, config.workerTaskInterval.syncData);
       break;
     case 'checkOrders':
-      //checkNoProfitOrders();
+      // checkNoProfitOrders();
       setInterval(() => { checkNoProfitOrders(); }, config.workerTaskInterval.syncData * 3);
       break;
     case 'test':

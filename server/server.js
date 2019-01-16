@@ -9,19 +9,7 @@ import config from './config/config';
 
 mongoose.connect(config.db.url, { useNewUrlParser: true });
 
-const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(__dirname));
-
-
-app.use('/events', eventRouter);
-app.use('/orders', orderRouter);
-
-app.listen(config.port);
-logger.log(`listen to: ${config.port}`);
-
-
+// start syncing worker task
 const worker = childProcess.fork(`${__dirname}/util/worker.js`);
 
 worker.on('message', (msg) => {
@@ -38,3 +26,16 @@ worker.on('exit', () => {
 
 worker.send('syncData');
 worker.send('checkOrders');
+
+// start web server
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(__dirname));
+
+
+app.use('/events', eventRouter);
+app.use('/orders', orderRouter);
+
+app.listen(config.port);
+logger.log(`listen to: ${config.port}`);

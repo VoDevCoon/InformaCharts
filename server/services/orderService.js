@@ -86,5 +86,12 @@ const OrderService = {
 
     return ordersByWeek;
   },
+
+  eventOrdersToday: async (event) => {
+    const date = moment((new Date()).setHours(0, 0, 0, 0)).tz('Australia/Sydney');
+    const ordersOfDate = await eventOrdersByDate(event._id, date);
+
+    return ordersOfDate;
+  },
 };
 module.exports = OrderService;

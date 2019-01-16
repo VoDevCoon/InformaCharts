@@ -1,12 +1,12 @@
 {
   "name": "informa-charts",
   "version": "1.0.0",
-  "description": "A graphic interface to display Informa latest sale data and events performance",
+  "description": "A graphic user interface to display Informa latest sale data and events performance",
   "main": "index.js",
   "scripts": {
-    "start": "npm-run-all --parallel open:src lint:watch",
+    "start": "npm-run-all --parallel open:src lint",
     "open:src": "babel-node server/server.js",
-    "lint": "esw webpack.config.* src server --color --fix",
+    "lint": "esw webpack.config.* server --color --fix",
     "lint:watch": "npm run lint -- --watch",
     "security-check": "nsp check"
   },

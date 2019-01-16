@@ -1,6 +1,7 @@
 import express from 'express';
 import Event from '../data/eventModel';
 import OrderService from '../services/orderService';
+import logger from '../util/logger';
 
 const router = express.Router();
 
@@ -14,6 +15,28 @@ router.param('eventCode', (req, res, next, eventCode) => {
         next(new Error('No event is found with supplied eventId'));
       }
     });
+});
+
+router.post('/today', async (req, res) => {
+  const { events } = req.body;
+
+  if (events && events.length > 0) {
+    const orders = {};
+    try {
+      for (let i = 0; i < events.length; i += 1) {
+        const event = await Event.findOne({ eventCode: events[i] });
+        if (event) {
+          let eventOrders = {};
+          eventOrders = await OrderService.eventOrdersToday(event);
+
+          orders[event.eventCode] = eventOrders;
+        }
+      }
+      res.json(orders);
+    } catch (err) {
+      res.send(err);
+    }
+  }
 });
 
 router.get('/:eventCode/:range/:startDate', (req, res) => {
