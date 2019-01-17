@@ -91,6 +91,8 @@ const OrderService = {
     const date = moment((new Date()).setHours(0, 0, 0, 0)).tz('Australia/Sydney');
     const ordersOfDate = await eventOrdersByDate(event._id, date);
 
+    ordersOfDate.name = event.name;
+
     return ordersOfDate;
   },
 };
