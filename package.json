@@ -28,6 +28,7 @@
     "webpack": "^4.19.0"
   },
   "dependencies": {
+    "app-root-path": "^2.1.0",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "chalk": "^2.4.1",

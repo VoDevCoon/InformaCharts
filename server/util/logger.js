@@ -1,6 +1,18 @@
 import chalk from 'chalk';
 import _ from 'lodash';
+import appRoot from 'app-root-path';
+import fs from 'fs';
+import util from 'util';
 import config from '../config/config';
+
+if (config.env === 'production') {
+  const logFile = fs.createWriteStream(`${appRoot}/server/logs/sync.log`, { flags: 'w' });
+  console.log = function (d) {
+    // remove ANSI color/styles
+    const dataString = String(d).replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''); // eslint-disable-line no-control-regex
+    logFile.write(`${util.format(dataString)} \n`);
+  };
+}
 
 const noop = function () { };
 const consoleLog = config.logging

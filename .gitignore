@@ -1,3 +1,4 @@
 node_modules/
 conference.json
 npm-debug.log*
+server/logs/
