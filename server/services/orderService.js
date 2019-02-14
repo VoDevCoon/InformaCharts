@@ -36,9 +36,8 @@ const OrderService = {
     let totalBookings = 0;
     let totalRevenue = 0;
 
-    const startDateOfMonth = moment().tz('Australia/Sydney').startOf('month').subtract(monthsBefore, 'months')
-      .unix() * 1000;
-
+    //const startDateOfMonth = moment().tz('Australia/Sydney').startOf('month').subtract(monthsBefore, 'months').unix() * 1000;
+    const startDateOfMonth = moment().startOf('month').subtract(monthsBefore, 'months').unix() * 1000;
     for (let i = 0; i < moment(startDateOfMonth).daysInMonth(); i += 1) {
       const date = moment(startDateOfMonth).add(i, 'days');
       const ordersOfDate = await eventOrdersByDate(event._id, date);
@@ -64,8 +63,8 @@ const OrderService = {
     let totalBookings = 0;
     let totalRevenue = 0;
 
-    const startDateOfWeek = moment().tz('Australia/Sydney').startOf('isoWeek').subtract(weeksBefore, 'weeks')
-      .unix() * 1000;
+    // const startDateOfWeek = moment().tz('Australia/Sydney').startOf('isoWeek').subtract(weeksBefore, 'weeks').unix() * 1000;
+    const startDateOfWeek = moment().startOf('isoWeek').subtract(weeksBefore, 'weeks').unix() * 1000;
 
     for (let i = 0; i < 7; i += 1) {
       const date = moment(startDateOfWeek).add(i, 'days');

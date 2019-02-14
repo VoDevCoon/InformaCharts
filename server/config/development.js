@@ -1,15 +1,19 @@
 module.exports = {
   logging: true,
   woo: {
-    key: process.env.wooStagingKey || '',
-    secret: process.env.wooStagingSecret || '',
-    baseUrl: 'http://staging.informa.com.au',
+    key: process.env.wooProdKey || '',
+    secret: process.env.wooProdSecret || '',
+    baseUrl: 'https://www.informa.com.au',
   },
   db: {
     url: 'mongodb://localhost/informacharts',
   },
   defaultSearchStartDate: {
-    event: '2018-07-01T00:00:00',
-    order: '2018-01-01T00:00:00',
+    event: '2015-01-01T00:00:00',
+    order: '2015-01-01T00:00:00',
   },
+  workerTaskInterval: {
+    syncData: 1000 * 60 * 15,
+  },
+  syncOrderBatches: 3,
 };
