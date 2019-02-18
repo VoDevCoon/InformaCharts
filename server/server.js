@@ -2,19 +2,11 @@ import childProcess from 'child_process';
 import mongoose from 'mongoose';
 import express from 'express';
 import bodyParser from 'body-parser';
-import fs from 'fs';
-import util from 'util';
+import cors from 'cors';
 import logger from './util/logger';
 import eventRouter from './route/eventRoutes';
 import orderRouter from './route/orderRoutes';
 import config from './config/config';
-
-if (config.env === 'production') {
-  const logFile = fs.createWriteStream(`${__dirname}/logs/sync.log`, { flags: 'w' });
-  console.log = function (d) {
-    logFile.write(`${util.format(d)} \n`);
-  };
-}
 
 mongoose.connect(config.db.url, { useNewUrlParser: true });
 
@@ -38,6 +30,7 @@ worker.send('checkOrders');
 
 // start web server
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(__dirname));
